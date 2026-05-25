@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.bank.transaction.client.AccountClient;
 import com.bank.transaction.dto.DepositWithdrawalRequest;
@@ -100,7 +102,18 @@ public class TransactionService {
         }
         
         transactionRepository.save(transaction);
-        transactionProducer.publishTransactionEvent(mapToEvent(transaction));
+        final var evt = mapToEvent(transaction);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    transactionProducer.publishTransactionEvent(evt);
+                }
+            });
+        } else {
+            // No transaction synchronization available (e.g., unit tests). Publish immediately.
+            transactionProducer.publishTransactionEvent(evt);
+        }
         return mapToResponse(transaction);
     }
 
@@ -141,7 +154,17 @@ public class TransactionService {
         }
 
         transactionRepository.save(transaction);
-        transactionProducer.publishTransactionEvent(mapToEvent(transaction));
+        final var evt2 = mapToEvent(transaction);
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    transactionProducer.publishTransactionEvent(evt2);
+                }
+            });
+        } else {
+            transactionProducer.publishTransactionEvent(evt2);
+        }
         return mapToResponse(transaction);
     }
     

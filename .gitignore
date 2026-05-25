@@ -13,3 +13,4 @@ target/
 
 # Local deployment notes
 DEPLOYMENT_STEPS.md
+KAFKA_EXPLAINER.md

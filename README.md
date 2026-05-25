@@ -247,6 +247,20 @@ Run tests for a single service:
 mvn -pl auth-service -am test
 ```
 
+## Swagger / API docs
+
+Swagger UI is enabled on the REST services so you can try endpoints in the browser.
+
+Open these after starting the services:
+
+- Auth service: http://localhost:8081/swagger-ui.html
+- Account service: http://localhost:8082/swagger-ui.html
+- Transaction service: http://localhost:8083/swagger-ui.html
+
+If you run the services in Docker, make sure those ports are exposed in your Compose file or access the docs through a reverse proxy.
+
+Swagger is useful for quick manual testing while you are still learning the flow, but keep the automated tests as the real source of confidence.
+
 ## Configuration notes
 
 ### Kafka
