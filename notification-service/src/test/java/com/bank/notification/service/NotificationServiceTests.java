@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.bank.notification.entity.TransactionType;
 import com.bank.notification.kafka.TransactionEvent;
 
 class NotificationServiceTests {
@@ -16,32 +17,32 @@ class NotificationServiceTests {
     @Test
     @DisplayName("processTransactionEvent should handle transfer events")
     void testProcessTransferEvent() {
-        TransactionEvent event = buildEvent("TRANSFER");
+        TransactionEvent event = buildEvent(TransactionType.TRANSFER);
         assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
     }
 
     @Test
     @DisplayName("processTransactionEvent should handle deposit events")
     void testProcessDepositEvent() {
-        TransactionEvent event = buildEvent("DEPOSIT");
+        TransactionEvent event = buildEvent(TransactionType.DEPOSIT);
         assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
     }
 
     @Test
     @DisplayName("processTransactionEvent should handle withdrawal events")
     void testProcessWithdrawalEvent() {
-        TransactionEvent event = buildEvent("WITHDRAWAL");
+        TransactionEvent event = buildEvent(TransactionType.WITHDRAWAL);
         assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
     }
 
     @Test
-    @DisplayName("processTransactionEvent should ignore unknown event types safely")
-    void testProcessUnknownEventType() {
-        TransactionEvent event = buildEvent("UNKNOWN");
+    @DisplayName("processTransactionEvent should ignore null event type safely")
+    void testProcessNullEventType() {
+        TransactionEvent event = buildEvent(null);
         assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
     }
 
-    private TransactionEvent buildEvent(String type) {
+    private TransactionEvent buildEvent(TransactionType type) {
         return new TransactionEvent(
                 "txn-123",
                 "ACC100",

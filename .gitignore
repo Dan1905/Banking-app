@@ -1,3 +1,12 @@
 .env
 .env.*
 !.env.example
+# Maven build output
+**/target/
+target/
+
+# OS / Editor files
+.DS_Store
+.idea/
+.vscode/
+*.log

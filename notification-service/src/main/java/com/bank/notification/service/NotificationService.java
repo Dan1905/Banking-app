@@ -11,10 +11,15 @@ import lombok.extern.slf4j.Slf4j;
 public class NotificationService {
     
     public void processTransactionEvent(TransactionEvent event) {
+        if (event.getType() == null) {
+            log.warn("Unknown transaction type: null");
+            return;
+        }
+
         switch (event.getType()) {
-            case "TRANSFER" -> handleTransfer(event);
-            case "DEPOSIT"  -> handleDeposit(event);
-            case "WITHDRAWAL" -> handleWithdrawal(event);
+            case TRANSFER -> handleTransfer(event);
+            case DEPOSIT -> handleDeposit(event);
+            case WITHDRAWAL -> handleWithdrawal(event);
             default -> log.warn("Unknown transaction type: {}", event.getType());
         }
     }
