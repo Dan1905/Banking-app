@@ -16,4 +16,32 @@ jobs:
           java-version: '17'
           distribution: temurin
           cache: maven
-      - run: mvn -B clean verify -f pom.xml
+      - name: Run unit tests
+        run: mvn -B -DskipITs test -f pom.xml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+      - name: Build package
+        run: mvn -B -DskipTests package -f pom.xml
+
+  integration:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+      - name: Run integration tests (verify)
+        run: mvn -B -Pintegration verify -f pom.xml
