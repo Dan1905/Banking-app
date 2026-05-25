@@ -10,3 +10,6 @@ target/
 .idea/
 .vscode/
 *.log
+
+# Local deployment notes
+DEPLOYMENT_STEPS.md
