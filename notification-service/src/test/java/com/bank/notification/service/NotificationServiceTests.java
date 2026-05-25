@@ -6,13 +6,22 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import com.bank.notification.entity.TransactionType;
 import com.bank.notification.kafka.TransactionEvent;
 
 class NotificationServiceTests {
 
-    private final NotificationService notificationService = new NotificationService();
+    private final ObjectProvider<JavaMailSender> mailSenderProvider = mock(ObjectProvider.class);
+    private final NotificationService notificationService = new NotificationService(mailSenderProvider);
+
+    NotificationServiceTests() {
+        when(mailSenderProvider.getIfAvailable()).thenReturn(null);
+    }
 
     @Test
     @DisplayName("processTransactionEvent should handle transfer events")
