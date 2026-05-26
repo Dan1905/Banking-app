@@ -128,6 +128,22 @@ Error Responses:
 - 401 Unauthorized - Invalid credentials
 ```
 
+### Internal User Email Lookup (Service-to-Service)
+```
+GET /api/auth/internal/users/{userId}
+X-Internal-Token: <internal-token>
+
+Success Response (200 OK):
+{
+  "id": 42,
+  "email": "john@example.com"
+}
+
+Error Responses:
+- 403 Forbidden - Invalid internal token
+- 404 Not Found - User does not exist
+```
+
 ## Installation & Setup
 
 ### Prerequisites
@@ -184,7 +200,7 @@ logging.level.org.springframework.security=INFO
 
 ## Testing
 
-Full test suite with 69 tests covering all layers:
+Full test suite with 76 tests covering all layers:
 - **Unit Tests** - Service and JWT logic
 - **Integration Tests** - Controller endpoints with MockMvc
 - **Validation Tests** - DTO validation rules
@@ -253,6 +269,8 @@ The service uses global exception handling with consistent error response format
 |--------|-------|-------|
 | 400 | Bad Request | Invalid input or validation failure |
 | 401 | Unauthorized | Invalid credentials or expired token |
+| 403 | Forbidden | Invalid internal token or forbidden operation |
+| 404 | Not Found | Requested user not found |
 | 409 | Conflict | Email already registered |
 | 500 | Internal Server Error | Unexpected server error |
 
@@ -325,7 +343,7 @@ Current performance benchmarks:
 | Registration | 150-200ms | Includes password hashing |
 | Login | 100-150ms | Token generation |
 | Token Validation | 10-20ms | Per request |
-| Full Test Suite | ~7 seconds | 69 tests |
+| Full Test Suite | ~8 seconds | 76 tests |
 
 ## Contributing
 

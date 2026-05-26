@@ -69,6 +69,8 @@ notification-service <----------- Kafka consumer
 
 Responsible for identity and token creation.
 
+Service README: [auth-service/README.md](auth-service/README.md)
+
 Key responsibilities:
 
 - register new users
@@ -87,6 +89,8 @@ Important code areas:
 ### `account-service`
 
 Responsible for account lifecycle and balance changes.
+
+Service README: [account-service/README.md](account-service/README.md)
 
 Key responsibilities:
 
@@ -107,6 +111,8 @@ Important code areas:
 
 Responsible for transaction processing and event publication.
 
+Service README: [transaction-service/README.md](transaction-service/README.md)
+
 Key responsibilities:
 
 - process deposits, withdrawals, and transfers
@@ -126,6 +132,8 @@ Important code areas:
 
 Responsible for consuming transaction events and reacting to them.
 
+Service README: [notification-service/README.md](notification-service/README.md)
+
 Key responsibilities:
 
 - listen for Kafka transaction events
@@ -142,6 +150,8 @@ Important code areas:
 ### `api-gateway`
 
 Responsible for central request routing and JWT protection.
+
+Service README: [api-gateway/README.md](api-gateway/README.md)
 
 Key responsibilities:
 
@@ -175,7 +185,8 @@ Transaction events are designed to flow through Kafka:
 
 1. A transaction is created in `transaction-service`.
 2. The transaction is saved in MySQL.
-3. A `TransactionEvent` is published to Kafka.
+3. Account ownership is resolved via internal lookups and event email metadata is enriched when available.
+4. A `TransactionEvent` is published to Kafka after the DB transaction commits.
 4. `notification-service` consumes the event.
 5. The notification layer can send email, SMS, audit logs, or other side effects.
 
@@ -198,7 +209,7 @@ docker compose up -d
 This starts:
 
 - MySQL on `localhost:3307` when using Docker Compose
-- Kafka on `localhost:9092`
+- Kafka on `localhost:29092` for host clients (`kafka:9092` for containers)
 - Zookeeper on `localhost:2181`
 
 ### Run services
@@ -241,6 +252,12 @@ Run all tests:
 mvn -T1C test
 ```
 
+Run full verification (unit + integration profiles configured in the repo):
+
+```bash
+mvn -B verify -f pom.xml
+```
+
 Run tests for a single service:
 
 ```bash
@@ -265,10 +282,18 @@ Swagger is useful for quick manual testing while you are still learning the flow
 
 ### Kafka
 
-The compose file advertises Kafka at `PLAINTEXT://localhost:9092`.
+The compose file advertises Kafka for local host clients on `PLAINTEXT_HOST://localhost:29092`.
 
-- If you run services on your machine, use `localhost:9092`.
+- If you run services on your machine, use `localhost:29092`.
 - If you run services in Docker on the same network, use `kafka:9092`.
+
+### Internal service token
+
+Internal service-to-service endpoints use the `X-Internal-Token` header.
+
+- `transaction-service` calls internal endpoints on `account-service` and `auth-service`.
+- Services validate the token against `internal.api-token`.
+- Invalid internal tokens return `403 Forbidden`.
 
 ### MySQL
 

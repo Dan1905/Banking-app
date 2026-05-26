@@ -4,8 +4,8 @@ Comprehensive testing documentation for the Auth Service microservice. This guid
 
 ## Test Overview
 
-**Total Test Count:** 69 tests  
-**Test Execution Time:** ~7 seconds  
+**Total Test Count:** 76 tests  
+**Test Execution Time:** ~8 seconds  
 **Coverage:** Unit, Integration, Validation, and Security tests
 
 ### Test Distribution
@@ -13,12 +13,12 @@ Comprehensive testing documentation for the Auth Service microservice. This guid
 | Test Suite | Count | Type | Coverage |
 |------------|-------|------|----------|
 | AuthApplicationTests | 7 | Component | Spring context loading, bean wiring |
-| AuthControllerTest | 6 | Integration | REST endpoints, HTTP responses |
+| AuthControllerTest | 11 | Integration | REST endpoints, HTTP responses, internal endpoint security |
 | AuthServiceTests | 10 | Unit | Business logic, authentication flow |
 | JwtServiceTest | 16 | Unit/Security | Token generation, validation, parsing |
 | LoginRequestValidationTest | 11 | Validation | Login DTO validation rules |
 | RegisterRequestValidationTest | 19 | Validation | Register DTO validation |
-| **Total** | **69** | - | **Comprehensive** |
+| **Total** | **76** | - | **Comprehensive** |
 
 ## Running Tests
 
@@ -97,7 +97,7 @@ class AuthApplicationTests
 mvn test -Dtest=AuthApplicationTests
 ```
 
-### 2. AuthControllerTest (6 tests)
+### 2. AuthControllerTest (11 tests)
 
 **Purpose:** Integration tests for REST endpoints
 
@@ -117,6 +117,9 @@ class AuthControllerTest
 | testLoginWithInvalidEmail | POST /api/auth/login | 400 Bad Request | Email validation |
 | testLoginWithBlankPassword | POST /api/auth/login | 400 Bad Request | Password required |
 | testRegisterWithAllRoles | POST /api/auth/register | 201 Created | All roles (CUSTOMER, EMPLOYEE, ADMIN) |
+| testInternalUserEmailLookup | GET /api/auth/internal/users/{id} | 200 OK | Internal lookup with valid token |
+| testInternalUserEmailLookupInvalidToken | GET /api/auth/internal/users/{id} | 403 Forbidden | Internal token validation |
+| testInternalUserEmailLookupNotFound | GET /api/auth/internal/users/{id} | 404 Not Found | Missing user behavior |
 
 **Run:**
 ```bash
@@ -126,7 +129,7 @@ mvn test -Dtest=AuthControllerTest
 **Example Request/Response:**
 ```bash
 # Register
-curl -X POST http://localhost:8082/api/auth/register \
+curl -X POST http://localhost:8081/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "fullName": "John Doe",
@@ -136,7 +139,7 @@ curl -X POST http://localhost:8082/api/auth/register \
   }'
 
 # Login
-curl -X POST http://localhost:8082/api/auth/login \
+curl -X POST http://localhost:8081/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john@example.com",
@@ -352,7 +355,7 @@ logging.level.org.springframework.test=DEBUG
 |-----------|---------|
 | `@SpringBootTest` | Full integration test with Spring context |
 | `@ExtendWith(MockitoExtension.class)` | Enable Mockito mocking |
-| `@MockBean` | Mock Spring-managed bean |
+| `@MockitoBean` | Mock Spring-managed bean (Spring Framework 7 / Boot 4 style) |
 | `@Mock` | Mock non-Spring object |
 | `@InjectMocks` | Inject mocks into class under test |
 | `@BeforeEach` | Setup before each test |
@@ -518,8 +521,8 @@ mvn clean install
 ## Performance Optimization
 
 Current results:
-- Full test suite: ~7 seconds
-- 69 tests executed
+- Full test suite: ~8 seconds
+- 76 tests executed
 - No flaky tests (deterministic)
 - H2 in-memory database (fast)
 
