@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -22,14 +24,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.bank.transaction.client.AccountClient;
+import com.bank.transaction.client.AuthClient;
+import com.bank.transaction.dto.AccountLookupResponse;
 import com.bank.transaction.dto.DepositWithdrawalRequest;
 import com.bank.transaction.dto.TransactionResponse;
 import com.bank.transaction.dto.TransferRequest;
 import com.bank.transaction.dto.UpdateBalanceRequest;
+import com.bank.transaction.dto.UserEmailResponse;
 import com.bank.transaction.entity.Transaction;
 import com.bank.transaction.entity.TransactionStatus;
 import com.bank.transaction.entity.TransactionType;
 import com.bank.transaction.exception.TransactionNotFoundException;
+import com.bank.transaction.kafka.TransactionEvent;
 import com.bank.transaction.kafka.TransactionProducer;
 import com.bank.transaction.repository.TransactionRepository;
 
@@ -41,6 +47,9 @@ class TransactionServiceTests {
 
     @Mock
     private AccountClient accountClient;
+
+    @Mock
+    private AuthClient authClient;
 
     @Mock
     private TransactionProducer transactionProducer;
@@ -95,6 +104,44 @@ class TransactionServiceTests {
         verify(accountClient, times(1)).credit(any(String.class), any(UpdateBalanceRequest.class));
         verify(transactionRepository, times(2)).save(any(Transaction.class));
         verify(transactionProducer, times(1)).publishTransactionEvent(any());
+    }
+
+    @Test
+    @DisplayName("transfer should populate email from internal lookups")
+    void testTransferPopulatesEmail() throws Exception {
+        prepare();
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            if (saved.getTransactionId() == null) {
+                saved.setTransactionId("txn-456");
+            }
+            if (saved.getCreatedAt() == null) {
+                saved.setCreatedAt(LocalDateTime.now());
+            }
+            return saved;
+        });
+
+        AccountLookupResponse account = new AccountLookupResponse();
+        account.setUserId(42L);
+        when(accountClient.getAccountInternal(eq("internal-token"), eq("ACC100")))
+                .thenReturn(account);
+
+        UserEmailResponse user = new UserEmailResponse();
+        user.setId(42L);
+        user.setEmail("user@example.com");
+        when(authClient.getUserEmail(eq("internal-token"), eq(42L))).thenReturn(user);
+
+        TransferRequest request = new TransferRequest();
+        request.setFromAccountNumber("ACC100");
+        request.setToAccountNumber("ACC200");
+        request.setAmount(new BigDecimal("100.00"));
+        request.setDescription("rent");
+
+        transactionService.transfer(request);
+
+        ArgumentCaptor<TransactionEvent> eventCaptor = ArgumentCaptor.forClass(TransactionEvent.class);
+        verify(transactionProducer, times(1)).publishTransactionEvent(eventCaptor.capture());
+        assertEquals("user@example.com", eventCaptor.getValue().getEmail());
     }
 
     @Test

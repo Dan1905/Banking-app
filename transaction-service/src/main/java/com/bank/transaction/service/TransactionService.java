@@ -10,10 +10,13 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.bank.transaction.client.AccountClient;
+import com.bank.transaction.client.AuthClient;
+import com.bank.transaction.dto.AccountLookupResponse;
 import com.bank.transaction.dto.DepositWithdrawalRequest;
 import com.bank.transaction.dto.TransactionResponse;
 import com.bank.transaction.dto.TransferRequest;
 import com.bank.transaction.dto.UpdateBalanceRequest;
+import com.bank.transaction.dto.UserEmailResponse;
 import com.bank.transaction.entity.Transaction;
 import com.bank.transaction.entity.TransactionStatus;
 import com.bank.transaction.entity.TransactionType;
@@ -33,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountClient accountClient;
+    private final AuthClient authClient;
     private final TransactionProducer transactionProducer;
 
     @Value("${internal.api-token}")
@@ -46,10 +50,36 @@ public class TransactionService {
                 .fromAccountNumber(t.getFromAccountNumber())
                 .toAccountNumber(t.getToAccountNumber())
                 .amount(t.getAmount())
+                .email(resolveEmail(t))
                 .type(t.getType())
                 .status(t.getStatus().name())
                 .createdAt(t.getCreatedAt())
                 .build();
+    }
+
+    private String resolveEmail(Transaction t) {
+        String accountNumber = t.getFromAccountNumber();
+        if (accountNumber == null || accountNumber.isBlank()) {
+            accountNumber = t.getToAccountNumber();
+        }
+        if (accountNumber == null || accountNumber.isBlank()) {
+            return null;
+        }
+
+        try {
+            AccountLookupResponse account = accountClient.getAccountInternal(internalToken, accountNumber);
+            if (account == null || account.getUserId() == null) {
+                return null;
+            }
+            UserEmailResponse user = authClient.getUserEmail(internalToken, account.getUserId());
+            if (user == null || user.getEmail() == null || user.getEmail().isBlank()) {
+                return null;
+            }
+            return user.getEmail();
+        } catch (Exception ex) {
+            log.warn("Failed to resolve email for account {}", accountNumber, ex);
+            return null;
+        }
     }
 
     private TransactionResponse mapToResponse(Transaction t) {

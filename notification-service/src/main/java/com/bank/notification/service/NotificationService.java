@@ -1,7 +1,5 @@
 package com.bank.notification.service;
 
-import java.lang.reflect.Method;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -44,10 +42,11 @@ public class NotificationService {
     private void handleTransfer(TransactionEvent event) {
         // Attempt to send email only if a JavaMailSender bean is available and the event contains an email.
         JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
-        String toEmail = extractStringField(event, "toEmail");
+        String toEmail = event.getEmail();
         String txId = event.getTransactionId();
+        boolean hasEmail = toEmail != null && !toEmail.isBlank();
 
-        if (mailSender != null && toEmail != null) {
+        if (mailSender != null && hasEmail) {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
                 message.setTo(toEmail);
@@ -58,7 +57,7 @@ public class NotificationService {
             } catch (Exception ex) {
                 log.error("Failed to send TRANSFER email for transaction {}", txId, ex);
             }
-        } else if (toEmail == null) {
+        } else if (!hasEmail) {
             log.info("No email address available on event {}; skipping send", txId);
         } else {
             log.info("No JavaMailSender configured; skipping email for transaction {}", txId);
@@ -82,21 +81,4 @@ public class NotificationService {
                 event.getAmount());
     }
 
-    private String extractStringField(TransactionEvent event, String fieldName) {
-        try {
-            Method m = event.getClass().getMethod("get" + capitalize(fieldName));
-            Object v = m.invoke(event);
-            return v != null ? v.toString() : null;
-        } catch (NoSuchMethodException e) {
-            return null;
-        } catch (Exception e) {
-            log.debug("Error extracting field {} from event: {}", fieldName, e.getMessage());
-            return null;
-        }
-    }
-
-    private String capitalize(String s) {
-        if (s == null || s.isEmpty()) return s;
-        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
-    }
 }

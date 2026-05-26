@@ -53,13 +53,14 @@ class NotificationServiceTests {
 
     private TransactionEvent buildEvent(TransactionType type) {
         return new TransactionEvent(
-                "txn-123",
-                "ACC100",
-                "ACC200",
-                new BigDecimal("50.00"),
-                type,
-                "SUCCESS",
-                LocalDateTime.now()
+            "txn-123",
+            "ACC100",
+            "ACC200",
+            new BigDecimal("50.00"),
+            null,
+            type,
+            "SUCCESS",
+            LocalDateTime.now()
         );
     }
 }

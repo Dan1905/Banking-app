@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,6 +19,8 @@ import com.bank.auth.dto.AdminCreateUserRequest;
 import com.bank.auth.dto.LoginRequest;
 import com.bank.auth.dto.RegisterRequest;
 import com.bank.auth.entity.Role;
+import com.bank.auth.entity.User;
+import com.bank.auth.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -27,6 +30,9 @@ class AuthControllerTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -149,6 +155,22 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should allow internal user email lookup with token")
+    void testInternalUserEmailLookup() throws Exception {
+        mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmail("john@example.com").orElseThrow();
+
+        mockMvc.perform(get("/api/auth/internal/users/" + user.getId())
+                .header("X-Internal-Token", "my-internal-secret-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("john@example.com"));
     }
 }
 

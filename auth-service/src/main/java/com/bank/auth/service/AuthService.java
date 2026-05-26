@@ -10,9 +10,11 @@ import com.bank.auth.dto.AdminCreateUserRequest;
 import com.bank.auth.dto.AuthResponse;
 import com.bank.auth.dto.LoginRequest;
 import com.bank.auth.dto.RegisterRequest;
+import com.bank.auth.dto.UserEmailResponse;
 import com.bank.auth.entity.Role;
 import com.bank.auth.entity.User;
 import com.bank.auth.exception.EmailAlreadyExistsException;
+import com.bank.auth.exception.UserNotFoundException;
 import com.bank.auth.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -76,6 +78,15 @@ public class AuthService {
  
         String token = jwtService.generateToken(user);
         return buildAuthResponse(user, token);
+    }
+
+    public UserEmailResponse getUserEmailById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        return UserEmailResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .build();
     }
  
     private AuthResponse buildAuthResponse(User user, String token) {

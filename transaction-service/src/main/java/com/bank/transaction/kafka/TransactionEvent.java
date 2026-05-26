@@ -19,6 +19,7 @@ public class TransactionEvent {
     private String fromAccountNumber;
     private String toAccountNumber;
     private BigDecimal amount;
+    private String email; // for notification service
     private TransactionType type;
     private String status;
     private LocalDateTime createdAt;

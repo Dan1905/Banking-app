@@ -2,6 +2,7 @@ package com.bank.account.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.bank.account.dto.AccountResponse;
 import com.bank.account.dto.BalanceResponse;
@@ -93,5 +93,13 @@ public class AccountController {
         validateInternalToken(internalToken);
         accountService.credit(request);
         return ResponseEntity.ok().build(); 
+    }
+
+    @GetMapping("/internal/{accountNumber}")
+    public ResponseEntity<AccountResponse> getAccountInternal(
+            @RequestHeader("X-Internal-Token") String internalToken,
+            @PathVariable String accountNumber) {
+        validateInternalToken(internalToken);
+        return ResponseEntity.ok(accountService.getAccountByAccountNumber(accountNumber));
     }
 }
