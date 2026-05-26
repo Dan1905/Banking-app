@@ -172,5 +172,21 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("john@example.com"));
     }
+
+        @Test
+        @DisplayName("Should reject internal user lookup with invalid token")
+        void testInternalUserEmailLookupInvalidToken() throws Exception {
+                mockMvc.perform(get("/api/auth/internal/users/999")
+                                .header("X-Internal-Token", "wrong-token"))
+                                .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return not found for missing internal user")
+        void testInternalUserEmailLookupNotFound() throws Exception {
+                mockMvc.perform(get("/api/auth/internal/users/999999")
+                                .header("X-Internal-Token", "my-internal-secret-token"))
+                                .andExpect(status().isNotFound());
+        }
 }
 

@@ -42,6 +42,18 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
 	}
 
+	@ExceptionHandler(SecurityException.class)
+	public ResponseEntity<ErrorResponse> handleSecurity(SecurityException ex) {
+		log.debug("Security error: {}", ex.getMessage());
+		ErrorResponse body = ErrorResponse.builder()
+				.status(HttpStatus.FORBIDDEN.value())
+				.error(HttpStatus.FORBIDDEN.getReasonPhrase())
+				.message("Forbidden")
+				.timestamp(LocalDateTime.now())
+				.build();
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
 		Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()

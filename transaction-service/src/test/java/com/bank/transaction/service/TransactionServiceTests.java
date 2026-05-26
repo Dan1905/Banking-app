@@ -145,6 +145,71 @@ class TransactionServiceTests {
     }
 
     @Test
+    @DisplayName("transfer should still publish event when auth lookup fails")
+    void testTransferEmailFallbackWhenAuthLookupFails() throws Exception {
+        prepare();
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            if (saved.getTransactionId() == null) {
+                saved.setTransactionId("txn-789");
+            }
+            if (saved.getCreatedAt() == null) {
+                saved.setCreatedAt(LocalDateTime.now());
+            }
+            return saved;
+        });
+
+        AccountLookupResponse account = new AccountLookupResponse();
+        account.setUserId(42L);
+        when(accountClient.getAccountInternal(eq("internal-token"), eq("ACC100")))
+                .thenReturn(account);
+        when(authClient.getUserEmail(eq("internal-token"), eq(42L)))
+                .thenThrow(new RuntimeException("lookup failed"));
+
+        TransferRequest request = new TransferRequest();
+        request.setFromAccountNumber("ACC100");
+        request.setToAccountNumber("ACC200");
+        request.setAmount(new BigDecimal("100.00"));
+        request.setDescription("rent");
+
+        transactionService.transfer(request);
+
+        ArgumentCaptor<TransactionEvent> eventCaptor = ArgumentCaptor.forClass(TransactionEvent.class);
+        verify(transactionProducer, times(1)).publishTransactionEvent(eventCaptor.capture());
+        assertEquals(null, eventCaptor.getValue().getEmail());
+    }
+
+    @Test
+    @DisplayName("depositOrWithdraw should still publish event when account lookup fails")
+    void testDepositFallbackWhenLookupFails() throws Exception {
+        prepare();
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
+            Transaction saved = invocation.getArgument(0);
+            if (saved.getTransactionId() == null) {
+                saved.setTransactionId("txn-deposit-fallback");
+            }
+            if (saved.getCreatedAt() == null) {
+                saved.setCreatedAt(LocalDateTime.now());
+            }
+            return saved;
+        });
+        when(accountClient.getAccountInternal(eq("internal-token"), eq("ACC200")))
+                .thenThrow(new RuntimeException("lookup failed"));
+
+        DepositWithdrawalRequest request = new DepositWithdrawalRequest();
+        request.setAccountNumber("ACC200");
+        request.setAmount(new BigDecimal("50.00"));
+        request.setType(TransactionType.DEPOSIT);
+        request.setDescription("top up");
+
+        transactionService.depositOrWithdraw(request);
+
+        ArgumentCaptor<TransactionEvent> eventCaptor = ArgumentCaptor.forClass(TransactionEvent.class);
+        verify(transactionProducer, times(1)).publishTransactionEvent(eventCaptor.capture());
+        assertEquals(null, eventCaptor.getValue().getEmail());
+    }
+
+    @Test
     @DisplayName("transfer should reject same source and destination account")
     void testTransferSameAccountRejected() {
         prepare();

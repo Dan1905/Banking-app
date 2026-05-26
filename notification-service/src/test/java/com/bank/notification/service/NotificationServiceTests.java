@@ -6,9 +6,13 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.bank.notification.entity.TransactionType;
@@ -49,6 +53,36 @@ class NotificationServiceTests {
     void testProcessNullEventType() {
         TransactionEvent event = buildEvent(null);
         assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
+    }
+
+    @Test
+    @DisplayName("processTransactionEvent should send transfer email when mail sender exists")
+    void testProcessTransferEventWithMailSender() {
+        JavaMailSender mailSender = mock(JavaMailSender.class);
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        TransactionEvent event = buildEvent(TransactionType.TRANSFER);
+        event.setEmail("user@example.com");
+
+        assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
+
+        ArgumentCaptor<SimpleMailMessage> captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        org.junit.jupiter.api.Assertions.assertEquals("user@example.com", captor.getValue().getTo()[0]);
+    }
+
+    @Test
+    @DisplayName("processTransactionEvent should skip email when recipient is blank")
+    void testProcessTransferEventWithBlankEmail() {
+        JavaMailSender mailSender = mock(JavaMailSender.class);
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        TransactionEvent event = buildEvent(TransactionType.TRANSFER);
+        event.setEmail("   ");
+
+        assertDoesNotThrow(() -> notificationService.processTransactionEvent(event));
+
+        verify(mailSender, never()).send(org.mockito.ArgumentMatchers.any(SimpleMailMessage.class));
     }
 
     private TransactionEvent buildEvent(TransactionType type) {
