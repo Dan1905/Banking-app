@@ -15,8 +15,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import com.bank.common.model.TransactionType;
 import com.bank.common.kafka.TransactionEvent;
+import com.bank.common.model.TransactionType;
 
 class NotificationServiceTests {
 

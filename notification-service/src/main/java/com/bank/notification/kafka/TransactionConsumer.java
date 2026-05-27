@@ -3,8 +3,8 @@ package com.bank.notification.kafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.bank.notification.service.NotificationService;
 import com.bank.common.kafka.TransactionEvent;
+import com.bank.notification.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

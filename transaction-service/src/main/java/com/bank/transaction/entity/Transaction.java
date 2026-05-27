@@ -3,6 +3,8 @@ package com.bank.transaction.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.bank.common.model.TransactionType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,7 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.bank.common.model.TransactionType;
 
 @Entity
 @Table(name = "transactions")

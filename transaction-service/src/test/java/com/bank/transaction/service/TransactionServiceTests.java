@@ -23,6 +23,8 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.bank.common.kafka.TransactionEvent;
+import com.bank.common.model.TransactionType;
 import com.bank.transaction.client.AccountClient;
 import com.bank.transaction.client.AuthClient;
 import com.bank.transaction.dto.AccountLookupResponse;
@@ -33,9 +35,7 @@ import com.bank.transaction.dto.UpdateBalanceRequest;
 import com.bank.transaction.dto.UserEmailResponse;
 import com.bank.transaction.entity.Transaction;
 import com.bank.transaction.entity.TransactionStatus;
-import com.bank.common.model.TransactionType;
 import com.bank.transaction.exception.TransactionNotFoundException;
-import com.bank.common.kafka.TransactionEvent;
 import com.bank.transaction.kafka.TransactionProducer;
 import com.bank.transaction.repository.TransactionRepository;
 
