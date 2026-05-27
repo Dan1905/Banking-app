@@ -2,7 +2,7 @@ package com.bank.transaction.dto;
 
 import java.math.BigDecimal;
 
-import com.bank.transaction.entity.TransactionType;
+import com.bank.common.model.TransactionType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

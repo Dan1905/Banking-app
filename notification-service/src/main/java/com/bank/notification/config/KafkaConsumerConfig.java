@@ -13,7 +13,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
-import com.bank.notification.kafka.TransactionEvent;
+import com.bank.common.kafka.TransactionEvent;
 
 
 @Configuration
@@ -32,9 +32,9 @@ public class KafkaConsumerConfig {
     props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-    JsonDeserializer<TransactionEvent> deserializer =
+        JsonDeserializer<TransactionEvent> deserializer =
             new JsonDeserializer<>(TransactionEvent.class);
-    deserializer.addTrustedPackages("com.bank.notification.kafka");
+        deserializer.addTrustedPackages("com.bank.notification.kafka", "com.bank.transaction.kafka", "com.bank.common.kafka");
 
     return new DefaultKafkaConsumerFactory<>(
             props,

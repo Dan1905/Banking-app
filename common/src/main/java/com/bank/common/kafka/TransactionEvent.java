@@ -1,9 +1,9 @@
-package com.bank.transaction.kafka;
+package com.bank.common.kafka;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.bank.transaction.entity.TransactionType;
+import com.bank.common.model.TransactionType;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

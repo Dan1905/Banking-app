@@ -13,7 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
-import com.bank.transaction.kafka.TransactionEvent;
+import com.bank.common.kafka.TransactionEvent;
 
 @Configuration
 public class KafkaProducerConfig {

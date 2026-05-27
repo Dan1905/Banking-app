@@ -1,4 +1,4 @@
-package com.bank.notification.entity;
+package com.bank.common.model;
 
 public enum TransactionType {
     TRANSFER,

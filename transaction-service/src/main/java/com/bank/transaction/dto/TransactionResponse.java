@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.bank.transaction.entity.TransactionStatus;
-import com.bank.transaction.entity.TransactionType;
+import com.bank.common.model.TransactionType;
 
 import lombok.Builder;
 import lombok.Data;
