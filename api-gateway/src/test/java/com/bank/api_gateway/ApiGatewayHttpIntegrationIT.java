@@ -1,20 +1,18 @@
 package com.bank.api_gateway;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.IOException;
 
-import org.junit.jupiter.api.AfterAll;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
+
 import com.bank.api_gateway.filter.JwtAuthFilter;
 
 import okhttp3.mockwebserver.Dispatcher;
@@ -30,9 +28,10 @@ class ApiGatewayHttpIntegrationIT {
     @LocalServerPort
     private int port;
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @BeforeAll
+    @SuppressWarnings("unused")
     static void startMockServer() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.setDispatcher(new Dispatcher() {
@@ -48,14 +47,10 @@ class ApiGatewayHttpIntegrationIT {
         mockWebServer.start();
     }
 
-    @AfterAll
-    static void stopMockServer() throws IOException {
-        if (mockWebServer != null) {
-            mockWebServer.shutdown();
-        }
-    }
+    
 
     @DynamicPropertySource
+    @SuppressWarnings("unused")
     static void registerProperties(DynamicPropertyRegistry registry) {
         String url = "http://localhost:" + mockWebServer.getPort();
         registry.add("services.auth-url", () -> url);
@@ -74,6 +69,7 @@ class ApiGatewayHttpIntegrationIT {
     }
 
     @TestConfiguration
+    @SuppressWarnings("unused")
     static class NoAuthConfig {
         @Bean
         public JwtAuthFilter jwtAuthFilter() {

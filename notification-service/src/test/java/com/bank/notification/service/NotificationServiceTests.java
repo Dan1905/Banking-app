@@ -23,10 +23,6 @@ class NotificationServiceTests {
     private final ObjectProvider<JavaMailSender> mailSenderProvider = mock(ObjectProvider.class);
     private final NotificationService notificationService = new NotificationService(mailSenderProvider);
 
-    NotificationServiceTests() {
-        when(mailSenderProvider.getIfAvailable()).thenReturn(null);
-    }
-
     @Test
     @DisplayName("processTransactionEvent should handle transfer events")
     void testProcessTransferEvent() {

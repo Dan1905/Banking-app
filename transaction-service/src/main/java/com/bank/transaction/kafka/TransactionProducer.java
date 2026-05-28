@@ -8,7 +8,7 @@ import com.bank.common.kafka.TransactionEvent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.RequiredArgsConstructor;
+
 
 @Component
 @RequiredArgsConstructor
